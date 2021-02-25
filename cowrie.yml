@@ -1,0 +1,162 @@
+- name: Cowrie
+  hosts: cowrie
+  vars_files:
+      - vars.yml
+
+  tasks:
+  
+    - set_fact:
+        cowrie_dir: "/home/cowrie/cowrie"
+        splunk_server: "{{ groups['splunk'][0] }}:9997"
+        splunk_password: "{{ lookup('password', '/dev/null length=12 chars=ascii_letters') }}"
+        splunk_index: "main"
+        splunk_sourcetype: "_json"
+        splunk_source: "cowrie.json"
+
+    - package:
+        name:
+          - python-virtualenv
+          - libssl-dev
+          - libffi-dev
+          - build-essential
+          - libpython3-dev
+          - python3-minimal
+          - authbind
+          - virtualenv
+          - git
+          - iptables
+        update_cache: yes
+      become: yes
+
+    - apt:
+        deb: "{{ splunk_url }}"
+      become: yes
+
+    - user:
+        name: cowrie
+        shell: /usr/sbin/nologin
+      become: yes
+
+    - git:
+        repo: http://github.com/cowrie/cowrie
+        clone: yes
+        dest: "{{ cowrie_dir }}"
+      become: yes
+      become_user: cowrie
+      become_method: sudo
+
+    - shell: virtualenv --python=python3 cowrie-env
+      args:
+        chdir: "{{ cowrie_dir }}"
+      become: yes
+      become_user: cowrie
+
+    - shell: source cowrie-env/bin/activate && pip install --upgrade pip && pip install --upgrade -r requirements.txt
+      args:
+        chdir: "{{ cowrie_dir }}"
+        executable: /bin/bash
+      become: yes
+      become_user: cowrie
+
+    - copy:
+        src: "{{ cowrie_dir }}/etc/cowrie.cfg.dist"
+        dest: "{{ cowrie_dir }}/etc/cowrie.cfg"
+        remote_src: yes
+      become: yes
+      become_user: cowrie
+
+    - lineinfile:
+        path: "{{ cowrie_dir }}/etc/cowrie.cfg"
+        regexp: '^auth_class = (\w)+'
+        line: 'auth_class = AuthRandom'
+      become: yes
+      become_user: cowrie
+
+    - lineinfile:
+        path: "{{ cowrie_dir }}/etc/cowrie.cfg"
+        regexp: '^#auth_class_parameters ='
+        line: 'auth_class_parameters = 1, 1, 0'
+      become: yes
+      become_user: cowrie
+
+    - lineinfile:
+        path: "{{ cowrie_dir }}/etc/cowrie.cfg"
+        regexp: '^hostname ='
+        line: 'hostname = {{ honeypot_hostname }}'
+      become: yes
+      become_user: cowrie
+
+    - lineinfile:
+        path: "{{ cowrie_dir }}/etc/cowrie.cfg"
+        regexp: '^timezone ='
+        line: 'timezone = {{ TZ }}'
+      become: yes
+      become_user: cowrie
+
+    - file:
+        path: /opt/splunkforwarder/etc/system/local/user-seed.conf
+        state: touch
+      become: yes
+
+    - blockinfile:
+        path: /opt/splunkforwarder/etc/system/local/user-seed.conf
+        block: |
+          [user_info]
+          USERNAME = admin
+          PASSWORD = {{ splunk_password }}
+      become: yes
+    
+    - file:
+        path: /opt/splunkforwarder/etc/system/local/inputs.conf
+        state: touch
+      become: yes
+
+    - blockinfile:
+        path: /opt/splunkforwarder/etc/system/local/inputs.conf
+        block: |
+          [monitor:/{{ cowrie_dir }}/var/log/cowrie/cowrie.json]
+          index = {{ splunk_index }}
+          source = {{ splunk_source }}
+          sourcetype = {{ splunk_sourcetype }}
+      become: yes
+
+    - file:
+        path: /opt/splunkforwarder/etc/system/local/outputs.conf
+        state: touch
+      become: yes      
+
+    - blockinfile:
+        path: /opt/splunkforwarder/etc/system/local/outputs.conf
+        block: |
+          [tcpout:splunk]
+          server = {{ splunk_server }}
+      become: yes
+
+    - shell: /opt/splunkforwarder/bin/splunk start --accept-license
+      become: yes
+
+    - shell: "{{ cowrie_dir }}/bin/cowrie start"
+      become: yes
+      become_user: cowrie
+
+    - blockinfile:
+        path: /etc/ssh/sshd_config
+        insertafter: '^Port'
+        block: |
+          Port 22
+          Port {{ new_ssh_port }}
+      become: yes
+
+    - service:
+        name: ssh
+        state: restarted
+      become: yes
+
+    - iptables:
+        table: nat
+        chain: PREROUTING
+        protocol: tcp
+        destination_port: '22'
+        jump: REDIRECT
+        to_ports: '2222'
+      become: yes

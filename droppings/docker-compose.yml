@@ -1,0 +1,22 @@
+version : '3.8'
+
+services:
+    Splunk:
+        image: splunk/splunk:latest
+        networks:
+           - monitor
+        ports:
+           - '8000:8000/tcp'
+           - '9997:9997/tcp'
+        env_file:
+            - environment.env
+        volumes:
+           - splunk_var:/opt/splunk/var
+           - splunk_etc:/opt/splunk/etc
+        restart: unless-stopped
+
+volumes:
+    splunk_var:
+    splunk_etc:
+networks:
+    monitor:

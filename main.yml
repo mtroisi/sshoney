@@ -1,0 +1,6 @@
+- name: Honeypot with monitoring
+  hosts: all
+
+- import_playbook: cowrie.yml
+
+- import_playbook: splunk.yml
