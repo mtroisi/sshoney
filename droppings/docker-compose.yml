@@ -10,6 +10,8 @@ services:
            - '9997:9997/tcp'
         env_file:
             - environment.env
+        environment:
+            SPLUNK_START_ARGS: '--accept-license'
         volumes:
            - splunk_var:/opt/splunk/var
            - splunk_etc:/opt/splunk/etc
