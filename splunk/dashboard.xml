@@ -10,12 +10,19 @@
       <delimiter> OR </delimiter>
       <initialValue>cowrie.command.input,cowrie.session.file_download,cowrie.direct-tcpip.request</initialValue>
     </input>
+    <input type="time" token="time" searchWhenChanged="true">
+      <label>Time</label>
+      <default>
+        <earliest>-24h@h</earliest>
+        <latest>now</latest>
+      </default>
+    </input>
     <input type="dropdown" token="session" searchWhenChanged="true">
       <label>Session</label>
       <fieldForLabel>display</fieldForLabel>
       <fieldForValue>session</fieldForValue>
       <search>
-        <query>index=main source=cowrie.json ($events$)
+        <query>index=main source=cowrie.json ($events$) earliest=$time.earliest$ latest=$time.latest$
 | eval display=src_ip+" - "+session
 | fields session,display
 | dedup session</query>
@@ -132,6 +139,21 @@
         <search>
           <query>index=main source=cowrie.json  eventid="cowrie.session.file_download" session=$session$
 | table _time,url,shasum,outfile</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>TTY</title>
+        <search>
+          <query>index=main eventid="cowrie.log.closed" session=$session$
+| table _time, ttylog, duration</query>
           <earliest>0</earliest>
           <latest></latest>
         </search>
