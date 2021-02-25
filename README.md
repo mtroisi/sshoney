@@ -14,3 +14,6 @@ sshoney is a SSH honeypot using cowrie for the actual honeypot and Splunk for da
 - `droppings/environment.env`: Environment variables for Splunk Enterprise.
   - `SPLUNK_PASSWORD`: The password to use for the new Splunk Enterprise instance. In a free license this isn't used to authenticate but still must be set.
   - `SPLUNK_LICENSE_URI`: If a valid Splunk Enterprise license is purchased, that can be entered here. Otherwise the Splunk Enterprise Free is already defined for you.
+
+## Visualization
+A sample dashboard has been included in the splunk directory. The source XML must be imported manually.

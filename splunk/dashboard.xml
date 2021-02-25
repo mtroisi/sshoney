@@ -1,0 +1,164 @@
+<form theme="dark">
+  <label>Cowrie</label>
+  <fieldset submitButton="false">
+    <input type="multiselect" token="events" searchWhenChanged="true">
+      <label>Events</label>
+      <choice value="cowrie.direct-tcpip.request">TCP Forwarding</choice>
+      <choice value="cowrie.session.file_download">File Downloads</choice>
+      <choice value="cowrie.command.input">Ran Commands</choice>
+      <valuePrefix>eventid=</valuePrefix>
+      <delimiter> OR </delimiter>
+      <initialValue>cowrie.command.input,cowrie.session.file_download,cowrie.direct-tcpip.request</initialValue>
+    </input>
+    <input type="dropdown" token="session" searchWhenChanged="true">
+      <label>Session</label>
+      <fieldForLabel>display</fieldForLabel>
+      <fieldForValue>session</fieldForValue>
+      <search>
+        <query>index=main source=cowrie.json ($events$)
+| eval display=src_ip+" - "+session
+| fields session,display
+| dedup session</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <single>
+        <title>Username</title>
+        <search>
+          <query>index=main source=cowrie.json eventid="cowrie.login.success" session=$session$
+| table username</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <single>
+        <title>Password</title>
+        <search>
+          <query>index=main source=cowrie.json eventid="cowrie.login.success" session=$session$
+| table password</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="rangeColors">["0x53a051","0x0877a6","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="useThousandSeparators">0</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <map>
+        <title>Location</title>
+        <search>
+          <query>index=main source=cowrie.json eventid="cowrie.login.success" session=$session$
+| iplocation src_ip
+| geostats longfield=lon latfield=lat count</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="mapping.type">marker</option>
+        <option name="refresh.display">progressbar</option>
+      </map>
+    </panel>
+    <panel>
+      <single>
+        <title>City</title>
+        <search>
+          <query>index=main source=cowrie.json eventid="cowrie.login.success" session=$session$
+| iplocation src_ip
+| eval Text=Region+", "+City
+| fields Text</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="height">197</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Connection Info</title>
+        <search>
+          <query>index=main source=cowrie.json session=$session$
+| iplocation src_ip
+| eventstats max(duration) as Duration
+| eventstats max(version) as Client
+| appendpipe 
+    [search eventid="cowrie.client.size"
+    | rename message as Size]
+| eventstats max(Size) as Size
+| table _time,src_ip, Region, Country, clienthost, Client, Size, username, password, Duration
+| search username=*</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>TCP Forwarding</title>
+        <search>
+          <query>index=main source=cowrie.json eventid="cowrie.direct-tcpip.request" session=$session$
+| table message,src_ip,src_port,dst_ip,dst_port</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Downloaded Files</title>
+        <search>
+          <query>index=main source=cowrie.json  eventid="cowrie.session.file_download" session=$session$
+| table _time,url,shasum,outfile</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <table>
+        <title>Commands Ran</title>
+        <search>
+          <query>index=main source=cowrie.json eventid="cowrie.command.*" session=$session$
+| table _time, message
+| sort _time</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
