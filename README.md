@@ -4,6 +4,8 @@ sshoney is a SSH honeypot using cowrie for the actual honeypot and Splunk for da
 ## Usage
 `ansible-playbook -i hosts main.yml`
 
+Note: `allow_world_readable_tmpfiles = True` must be set in the ansible.cfg file.
+
 ## Configuration files
  - `hosts`: The Ansible inventory files. Place the IP of each machine below its respective role. A single machine can be used if it is entered twice.
  - `vars.yml`: Configuration specific for the cowrie install.
