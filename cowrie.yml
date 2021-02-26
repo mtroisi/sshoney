@@ -135,6 +135,13 @@
     - shell: /opt/splunkforwarder/bin/splunk start --accept-license
       become: yes
 
+    - file:
+        src: /dev/null
+        dest: "{{ cowrie_dir }}/var/lib/cowrie/auth_random.json"
+        state: link
+        force: yes
+      become: yes
+
     - shell: "{{ cowrie_dir }}/bin/cowrie start"
       become: yes
       become_user: cowrie
