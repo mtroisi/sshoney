@@ -9,7 +9,7 @@ Note: `allow_world_readable_tmpfiles = True` must be set in the ansible.cfg file
 ## Configuration files
  - `hosts`: The Ansible inventory files. Place the IP of each machine below its respective role. A single machine can be used if it is entered twice.
  - `vars.yml`: Configuration specific for the cowrie install.
-   - `new_ssh_port`: Port for host SSH to listen on. (Honeypot will take over port 22)
+   - `new_ssh_port`: Port for host SSH to listen on other than 2222. (Honeypot will take over port 22, and uses 2222 to listen normally)
    - `honeypot_hostname`: The hostname that will appear when a user connects to the honeypot.
    - `TZ`: Timezone for cowrie.
    - `splunk_url`: The direct download link for the Splunk Universal Forwarder. You can get this directly from the Splunk download page.
