@@ -1,4 +1,5 @@
-new_ssh_port: 
-honeypot_hostname: 
-TZ: 
-splunk_url: 
+new_ssh_port:
+honeypot_hostname:
+TZ:
+splunk_server:
+splunk_url:

@@ -11,6 +11,7 @@ Note: `allow_world_readable_tmpfiles = True` must be set in the ansible.cfg file
  - `vars.yml`: Configuration specific for the cowrie install.
    - `new_ssh_port`: Port for host SSH to listen on other than 2222. (Honeypot will take over port 22, and uses 2222 to listen normally)
    - `honeypot_hostname`: The hostname that will appear when a user connects to the honeypot.
+   - `splunk_server`: Hostname or IP address that the Splunk server can be reached over tcp port 9997. If Cowrie and Splunk are on the same machine, set to 127.0.0.1
    - `TZ`: Timezone for cowrie.
    - `splunk_url`: The direct download link for the Splunk Universal Forwarder. You can get this directly from the Splunk download page.
 - `droppings/environment.env`: Environment variables for Splunk Enterprise.

@@ -12,6 +12,7 @@ services:
             - environment.env
         environment:
             SPLUNK_START_ARGS: '--accept-license'
+            SPLUNK_LICENSE_URI: 'Free'
         volumes:
            - splunk_var:/opt/splunk/var
            - splunk_etc:/opt/splunk/etc

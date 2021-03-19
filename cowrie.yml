@@ -7,7 +7,7 @@
   
     - set_fact:
         cowrie_dir: "/home/cowrie/cowrie"
-        splunk_server: "{{ groups['splunk'][0] }}:9997"
+        splunk_address: "{{ splunk_server }}:9997"
         splunk_password: "{{ lookup('password', '/dev/null length=12 chars=ascii_letters') }}"
         splunk_index: "main"
         splunk_sourcetype: "_json"
@@ -129,7 +129,7 @@
         path: /opt/splunkforwarder/etc/system/local/outputs.conf
         block: |
           [tcpout:splunk]
-          server = {{ splunk_server }}
+          server = {{ splunk_address }}
       become: yes
 
     - shell: /opt/splunkforwarder/bin/splunk start --accept-license
