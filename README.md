@@ -14,9 +14,6 @@ Note: `allow_world_readable_tmpfiles = True` must be set in the ansible.cfg file
    - `splunk_server`: Hostname or IP address that the Splunk server can be reached over tcp port 9997. If Cowrie and Splunk are on the same machine, set to 127.0.0.1
    - `TZ`: Timezone for cowrie.
    - `splunk_url`: The direct download link for the Splunk Universal Forwarder. You can get this directly from the Splunk download page.
-- `droppings/environment.env`: Environment variables for Splunk Enterprise.
-  - `SPLUNK_PASSWORD`: The password to use for the new Splunk Enterprise instance. In a free license this isn't used to authenticate but still must be set.
-  - `SPLUNK_LICENSE_URI`: If a valid Splunk Enterprise license is purchased, that can be entered here. Otherwise the Splunk Enterprise Free is already defined for you.
 
 ## Visualization
 A sample dashboard has been included in the splunk directory. The source XML must be imported manually.
